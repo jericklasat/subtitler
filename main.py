@@ -65,7 +65,9 @@ def main():
             task=task,
             compression_ratio_threshold=2.4,
             no_speech_threshold=0.6,
-            condition_on_previous_text=False
+            # Prevents Whisper from conditioning each window on prior output,
+            # which otherwise causes repetition loops (see mlx_whisper --condition-on-previous-text False).
+            condition_on_previous_text=False,
         )
         
         segments = result.get("segments", [])
@@ -98,8 +100,8 @@ def main():
                 consecutive_repeat_count = 1
                 last_cleaned_text = text
 
-            # If the model prints the same exact dialogue phrase more than twice consecutively, drop it!
-            if consecutive_repeat_count > 2:
+            # Drop consecutive duplicates as a safety net when Whisper still loops.
+            if consecutive_repeat_count > 1:
                 continue
                 
             # ANTI-LOOP GATEWAY 3: Drop rolling window text loops

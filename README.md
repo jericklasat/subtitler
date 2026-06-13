@@ -83,8 +83,8 @@ ssh user@remote-host "ffmpeg -i /path/to/video.mp4 -vn -af 'highpass=f=200,lowpa
 
 ## How it works
 
-1. **Transcription** — `mlx_whisper.transcribe()` runs Whisper Large V3 with MLX on Apple Silicon.
-2. **Anti-loop filtering** — Segments that Whisper sometimes repeats (zero-duration timestamps, consecutive duplicates, overlapping time ranges) are dropped before writing the SRT.
+1. **Transcription** — `mlx_whisper.transcribe()` runs Whisper Large V3 with MLX on Apple Silicon. `condition_on_previous_text=False` disables cross-window prompting, which prevents the model from getting stuck repeating the same phrase across segments.
+2. **Anti-loop filtering** — Segments that Whisper sometimes still repeats (zero-duration timestamps, consecutive duplicates, overlapping time ranges) are dropped before writing the SRT.
 3. **Export** — Valid segments are formatted as standard SRT with `HH:MM:SS,mmm` timestamps.
 
 ## Troubleshooting
@@ -95,6 +95,7 @@ ssh user@remote-host "ffmpeg -i /path/to/video.mp4 -vn -af 'highpass=f=200,lowpa
 | `Local file not found`             | Check the path, or use `-` as the first argument for stream mode               |
 | Slow first run                     | The model is downloading (~3.1 GB); later runs use the cached copy             |
 | Poor subtitle quality              | Try a different `language` code or switch between `transcribe` and `translate` |
+| Repeating text fragments           | Already mitigated via `condition_on_previous_text=False`; upgrade `mlx-whisper` if repeats persist |
 
 ## License
 
